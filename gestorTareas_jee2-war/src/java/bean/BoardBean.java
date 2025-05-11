@@ -91,7 +91,7 @@ public class BoardBean implements Serializable {
             // La descripción y el encargado se actualan directamente en currentTask
             if (tagName != null && !tagName.trim().isEmpty()) {
                 currentTask.addTag(new Tag(tagName.trim()));
-                tagName = null; // Limpiar después de añadir tag
+                this.tagName = null; // Limpiar después de añadir tag
             }
             // Los cambios en currentTask se guardarán al llamar a saveTaskChanges
         }

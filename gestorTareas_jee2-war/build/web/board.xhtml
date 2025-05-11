@@ -4,9 +4,13 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<f:metadata>
+    <f:viewParam name="projectId" value="#{projectBean.currentProjectId}" converter="javax.faces.Integer" />
+    <f:viewAction action="#{projectBean.loadProject}" immediate="true" />
+</f:metadata>
 <h:head>
     <meta charset="UTF-8"/>
-    <title>#{projectBean.currentProject.name}</title>
+    <title>#{projectBean.currentProject != null ? projectBean.currentProject.name : 'Tablero'}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
@@ -106,100 +110,108 @@
     </div>
 
     <div class="flex-grow-1 p-4">
-        <h1 class="mb-4">#{projectBean.currentProject.name}</h1>
+        <h1 class="mb-4">#{projectBean.currentProject != null ? projectBean.currentProject.name : 'Selecciona un Proyecto'}</h1>
 
-        <div class="kanban-board">
-            <ui:repeat var="taskList" value="#{projectBean.currentProject.lists}">
-                <div class="kanban-list" data-listname="#{taskList.name}">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="mb-0">#{taskList.name}</h5>
-                        <h:form styleClass="ms-2">
-                            <h:commandButton value="" action="#{boardBean.removeList(taskList.name)}" styleClass="btn btn-sm btn-outline-danger" title="Eliminar lista">
-                                <i class="bi bi-trash"></i>
+        <h:panelGroup rendered="#{projectBean.currentProject != null}">
+            <div class="kanban-board">
+                <ui:repeat var="taskList" value="#{projectBean.currentProject.lists}">
+                    <div class="kanban-list" data-listname="#{taskList.name}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">#{taskList.name}</h5>
+                            <h:form styleClass="ms-2">
+                                <h:commandButton value="" action="#{boardBean.removeList(taskList.name)}" styleClass="btn btn-sm btn-outline-danger" title="Eliminar lista">
+                                    <i class="bi bi-trash"></i>
+                                </h:commandButton>
+                            </h:form>
+                        </div>
+
+                        <div class="task-container" id="tasks-#{taskList.name.replace(' ', '_')}">
+                            <ui:repeat var="task" value="#{taskList.tasks}" varStatus="taskLoop">
+                                <div class="kanban-task" data-bs-toggle="modal" data-bs-target="#taskModal-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}"
+                                     onclick="PF('taskDialog#{taskList.name.replace(' ', '_')}-#{taskLoop.index}').show(); #{boardBean.openEditModal(task)}">
+                                    <div>
+                                        <h6 class="mb-1">#{task.title}</h6>
+                                        <h:outputText value="Encargado: #{task.encargado}" styleClass="text-muted" rendered="#{not empty task.encargado}"/>
+                                        <div>
+                                            <ui:repeat var="tag" value="#{task.tags}">
+                                                <span class="tag">#{tag.name}</span>
+                                            </ui:repeat>
+                                        </div>
+                                    </div>
+                                    <h:form styleClass="delete-task-form" onclick="event.stopPropagation();">
+                                        <h:commandButton value="" action="#{boardBean.removeTask(taskList.name, taskLoop.index)}" styleClass="btn btn-sm btn-outline-danger" title="Eliminar tarea">
+                                            <i class="bi bi-x-lg"></i>
+                                        </h:commandButton>
+                                    </h:form>
+                                </div>
+
+                                <div class="modal fade" id="taskModal-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}" tabindex="-1" aria-labelledby="taskModalLabel-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Editar Tarea</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <h:form>
+                                                    <div class="mb-3">
+                                                        <h:outputLabel styleClass="form-label" value="Descripción"/>
+                                                        <h:inputTextarea styleClass="form-control" value="#{boardBean.currentTask.description}" rows="3"/>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <h:outputLabel styleClass="form-label" value="Etiquetas actuales"/><br/>
+                                                        <ui:repeat var="tag" value="#{boardBean.currentTask.tags}">
+                                                            <span class="badge bg-secondary me-1">#{tag.name}</span>
+                                                        </ui:repeat>
+                                                        <h:outputLabel styleClass="form-label mt-2" value="Nueva etiqueta"/>
+                                                        <div class="d-flex">
+                                                            <h:inputText styleClass="form-control me-2" value="#{boardBean.newTag}" id="newTagInput"/>
+                                                            <h:commandButton value="Agregar" action="#{boardBean.addTagToCurrentTask}" styleClass="btn btn-outline-secondary btn-sm" immediate="true">
+                                                                <f:ajax execute="@this newTagInput" render="@this :taskModal-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}"/>
+                                                            </h:commandButton>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <h:outputLabel styleClass="form-label" value="Encargado"/>
+                                                        <h:inputText styleClass="form-control" value="#{boardBean.currentTask.encargado}"/>
+                                                    </div>
+                                                    <h:commandButton 
+                                                     value="Guardar Cambios" 
+                                                    action="#{boardBean.saveTaskChanges(taskList.name, taskLoop.index)}" 
+                                                     styleClass="btn btn-primary"/>
+                                                </h:form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                        </div>
+
+                        <h:form styleClass="d-flex mt-2">
+                            <h:inputHidden value="#{boardBean.newTaskTitle}"/>
+                            <h:inputText value="#{boardBean.newTaskTitle}" styleClass="input-tarea me-2"/>
+                            <h:commandButton value="" action="#{boardBean.addTask(taskList.name)}" styleClass="btn-discreto">
+                                <i class="bi bi-plus"></i>
                             </h:commandButton>
                         </h:form>
                     </div>
+                </ui:repeat>
 
-                    <div class="task-container" id="tasks-#{taskList.name.replace(' ', '_')}">
-                        <ui:repeat var="task" value="#{taskList.tasks}" varStatus="taskLoop">
-                            <div class="kanban-task" data-bs-toggle="modal" data-bs-target="#taskModal-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}">
-                                <div>
-                                    <h6 class="mb-1">#{task.title}</h6>
-                                    <h:outputText value="Encargado: #{task.encargado}" styleClass="text-muted" rendered="#{not empty task.encargado}"/>
-                                    <div>
-                                        <ui:repeat var="tag" value="#{task.tags}">
-                                            <span class="tag">#{tag.name}</span>
-                                        </ui:repeat>
-                                    </div>
-                                </div>
-                                <h:form styleClass="delete-task-form" onclick="event.stopPropagation();">
-                                    <h:commandButton value="" action="#{boardBean.removeTask(taskList.name, taskLoop.index)}" styleClass="btn btn-sm btn-outline-danger" title="Eliminar tarea">
-                                        <i class="bi bi-x-lg"></i>
-                                    </h:commandButton>
-                                </h:form>
-                            </div>
-
-                            <div class="modal fade" id="taskModal-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}" tabindex="-1" aria-labelledby="taskModalLabel-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="taskModalLabel-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}">Editar Tarea</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <h:form>
-                                                <h:inputHidden value="#{boardBean.taskDescription}"/>
-                                                <h:inputHidden value="#{boardBean.tagName}"/>
-                                                <h:inputHidden value="#{boardBean.encargado}"/>
-                                                <div class="mb-3">
-                                                    <h:outputLabel styleClass="form-label" value="Descripción"/>
-                                                    <h:inputTextarea styleClass="form-control" value="#{boardBean.taskDescription}" rows="3">
-                                                        <f:ajax event="blur" execute="@this" render="@none" listener="#{boardBean.updateTaskDescription(task)}"/>
-                                                    </h:inputTextarea>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <h:outputLabel styleClass="form-label" value="Etiquetas actuales"/><br/>
-                                                    <ui:repeat var="tag" value="#{task.tags}">
-                                                        <span class="badge bg-secondary me-1">#{tag.name}</span>
-                                                    </ui:repeat>
-                                                    <h:outputLabel styleClass="form-label mt-2" value="Nueva etiqueta"/>
-                                                    <h:inputText styleClass="form-control" value="#{boardBean.tagName}" />
-                                                </div>
-                                                <div class="mb-3">
-                                                    <h:outputLabel styleClass="form-label" value="Encargado"/>
-                                               
-                                                    <h:inputText styleClass="form-control" value="#{boardBean.encargado}"/>
-                                                </div>
-                                                <h:commandButton value="Guardar Cambios" action="#{boardBean.editTaskDetails(taskList.name, taskLoop.index)}" styleClass="btn btn-primary"/>
-                                            </h:form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </ui:repeat>
-                    </div>
-
-                    <h:form styleClass="d-flex mt-2">
-                        <h:inputHidden value="#{boardBean.newTaskTitle}"/>
-                        <h:inputText value="#{boardBean.newTaskTitle}" styleClass="input-tarea me-2"/>
-                        <h:commandButton value="" action="#{boardBean.addTask(taskList.name)}" styleClass="btn-discreto">
-                            <i class="bi bi-plus"></i>
-                        </h:commandButton>
+                <div class="kanban-list d-flex flex-column justify-content-center align-items-center text-muted" style="background-color: #e0e0e0;">
+                    <h:form styleClass="w-100">
+                        <div class="d-flex">
+                            <h:inputText value="#{boardBean.newListName}" styleClass="form-control input-lista me-2" />
+                            <h:commandButton value="" action="#{boardBean.addList}" styleClass="btn btn-dark rounded-pill">
+                                <i class="bi bi-plus-lg"></i>
+                            </h:commandButton>
+                        </div>
                     </h:form>
                 </div>
-            </ui:repeat>
-
-            <div class="kanban-list d-flex flex-column justify-content-center align-items-center text-muted" style="background-color: #e0e0e0;">
-                <h:form styleClass="w-100">
-                    <div class="d-flex">
-                        <h:inputText value="#{boardBean.newListName}" styleClass="form-control input-lista me-2" />
-                        <h:commandButton value="" action="#{boardBean.addList}" styleClass="btn btn-dark rounded-pill">
-                            <i class="bi bi-plus-lg"></i>
-                        </h:commandButton>
-                    </div>
-                </h:form>
             </div>
-        </div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{projectBean.currentProject == null}">
+            <p class="text-muted">Selecciona un proyecto de la lista para ver el tablero.</p>
+        </h:panelGroup>
     </div>
 
     <script>
