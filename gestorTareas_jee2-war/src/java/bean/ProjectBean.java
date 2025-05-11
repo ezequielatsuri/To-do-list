@@ -41,17 +41,11 @@ public void init() {
     // Creamos el primer proyecto con id = 1
     Project defaultProject1 = new Project("Mi Primer Proyecto");
     defaultProject1.setId(nextProjectId);
+    
     defaultProject1.addList(new TaskList("Por hacer", defaultProject1));
-    defaultProject1.addList(new TaskList("En Progreso", defaultProject1));
-    defaultProject1.addList(new TaskList("Hecho", defaultProject1));
     projects.put(nextProjectId++, defaultProject1);
 
-    // Creamos el segundo proyecto con id = 2
-    Project defaultProject2 = new Project("Segundo Proyecto");
-    defaultProject2.setId(nextProjectId);
-    defaultProject2.addList(new TaskList("Tareas Pendientes", defaultProject2));
-    defaultProject2.addList(new TaskList("Trabajando en ello", defaultProject2));
-    projects.put(nextProjectId++, defaultProject2);
+    
 
     // Elegimos como proyecto actual el primero
     currentProjectId = projects.keySet().iterator().next();
@@ -76,8 +70,7 @@ public void init() {
         newProject.setId(nextProjectId);
         // Creamos las listas iniciales
         newProject.addList(new TaskList("Por Hacer", newProject));
-        newProject.addList(new TaskList("En Progreso", newProject));
-        newProject.addList(new TaskList("Hecho", newProject));
+       
         // Lo guardamos en el mapa con su id
         projects.put(nextProjectId, newProject);
         // Actualizamos el proyecto seleccionado

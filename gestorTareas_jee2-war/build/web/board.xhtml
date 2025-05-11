@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 <f:metadata>
     <f:viewParam name="projectId" value="#{projectBean.currentProjectId}" converter="javax.faces.Integer" />
     <f:viewAction action="#{projectBean.loadProject}" immediate="true" />
@@ -153,33 +154,46 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <h:form>
-                                                    <div class="mb-3">
-                                                        <h:outputLabel styleClass="form-label" value="Descripción"/>
-                                                        <h:inputTextarea styleClass="form-control" value="#{boardBean.currentTask.description}" rows="3"/>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <h:outputLabel styleClass="form-label" value="Etiquetas actuales"/><br/>
-                                                        <ui:repeat var="tag" value="#{boardBean.currentTask.tags}">
-                                                            <span class="badge bg-secondary me-1">#{tag.name}</span>
-                                                        </ui:repeat>
-                                                        <h:outputLabel styleClass="form-label mt-2" value="Nueva etiqueta"/>
-                                                        <div class="d-flex">
-                                                            <h:inputText styleClass="form-control me-2" value="#{boardBean.newTag}" id="newTagInput"/>
-                                                            <h:commandButton value="Agregar" action="#{boardBean.addTagToCurrentTask}" styleClass="btn btn-outline-secondary btn-sm" immediate="true">
-                                                                <f:ajax execute="@this newTagInput" render="@this :taskModal-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}"/>
-                                                            </h:commandButton>
-                                                        </div>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <h:outputLabel styleClass="form-label" value="Encargado"/>
-                                                        <h:inputText styleClass="form-control" value="#{boardBean.currentTask.encargado}"/>
-                                                    </div>
-                                                    <h:commandButton 
-                                                     value="Guardar Cambios" 
-                                                    action="#{boardBean.saveTaskChanges(taskList.name, taskLoop.index)}" 
-                                                     styleClass="btn btn-primary"/>
-                                                </h:form>
+                                                <h:form id="taskForm-#{taskLoop.index}">
+    <!-- Descripción -->
+    <div class="mb-3">
+        <h:outputLabel styleClass="form-label" value="Descripción"/>
+        <h:inputTextarea styleClass="form-control"
+                         value="#{boardBean.currentTask.description}"
+                         rows="3"/>
+    </div>
+
+    <!-- Etiquetas actuales -->
+    <div class="mb-3">
+        <h:outputLabel styleClass="form-label" value="Etiquetas actuales"/><br/>
+        <h:panelGroup id="tagsPanel" layout="block">
+            <ui:repeat var="tag" value="#{boardBean.currentTask.tags}">
+                <span class="badge bg-secondary me-1">#{tag.name}</span>
+            </ui:repeat>
+        </h:panelGroup>
+    </div>
+
+    <!-- Campo único para la nueva etiqueta -->
+    <div class="mb-3">
+        <h:outputLabel for="newTagInput" styleClass="form-label" value="Nueva etiqueta"/>
+        <h:inputText id="newTagInput"
+                     styleClass="form-control"
+                     value="#{boardBean.newTag}"/>
+    </div>
+
+    <!-- Encargado -->
+    <div class="mb-3">
+        <h:outputLabel styleClass="form-label" value="Encargado"/>
+        <h:inputText styleClass="form-control"
+                     value="#{boardBean.currentTask.encargado}"/>
+    </div>
+
+    <!-- Botón único: guarda descripción, encargado y agrega la nueva etiqueta -->
+    <h:commandButton value="Guardar Cambios"
+                     action="#{boardBean.saveTaskChanges(taskList.name, taskLoop.index)}"
+                     styleClass="btn btn-primary"/>
+</h:form>
+
                                             </div>
                                         </div>
                                     </div>
