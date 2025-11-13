@@ -1,275 +1,313 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
-<f:metadata>
-    <f:viewParam name="projectId" value="#{projectBean.currentProjectId}" converter="javax.faces.Integer" />
-    <f:viewAction action="#{projectBean.loadProject}" immediate="true" />
-</f:metadata>
-<h:head>
+
+  <f:metadata>
+    <f:viewParam name="projectId"
+                 value="#{projectBean.currentProjectId}"
+                 converter="javax.faces.Integer"/>
+    <f:viewAction action="#{projectBean.loadProject}" immediate="true"/>
+  </f:metadata>
+
+  <h:head>
     <meta charset="UTF-8"/>
-    <title>#{projectBean.currentProject != null ? projectBean.currentProject.name : 'Tablero'}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <title>#{projectBean.currentProject != null
+               ? projectBean.currentProject.name
+               : 'Tablero'}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet"/>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
-    <style type="text/css">
-        .kanban-board {
-            display: flex;
-            gap: 1rem;
-            overflow-x: auto;
-        }
-        .kanban-list {
-            background-color: #f4f5f7;
-            border-radius: 8px;
-            padding: 1rem;
-            min-width: 300px;
-        }
-        .task-container {
-            min-height: 60px;
-            margin-bottom: 0.5rem;
-        }
-        .kanban-task {
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .tag {
-            display: inline-block;
-            background-color: #C377E0;
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            font-size: 0.75rem;
-            margin-right: 0.3rem;
-        }
-        .delete-task-form {
-            margin: 0;
-        }
-        .input-tarea, .input-lista {
-            border-radius: 20px;
-            border: 1px solid #ccc;
-            padding: 0.3rem 0.75rem;
-            font-size: 0.9rem;
-            background-color: #f9f9f9;
-            width: 100%;
-        }
-        .btn-discreto {
-            border-radius: 20px;
-            padding: 0.3rem 0.9rem;
-            font-size: 0.9rem;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-        }
-        .btn-discreto:hover {
-            background-color: #5a6268;
-        }
-        .kanban-list:last-child {
-            min-width: 280px;
-            border: 2px dashed #ccc;
-            background-color: #f0f0f0 !important;
-            opacity: 0.85;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .kanban-list:last-child:hover {
-            background-color: #e6e6e6 !important;
-            opacity: 1;
-        }
+    <style>
+      .kanban-board { display:flex; gap:1rem; overflow-x:auto; align-items:flex-start; }
+      .kanban-list { background:#f4f5f7; border-radius:8px; padding:1rem; min-width:300px; }
+      .task-container { min-height:60px; margin-bottom:.5rem; }
+      .kanban-task { background:#fff; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1);
+                     padding:.75rem; margin-bottom:.5rem; cursor:pointer; display:flex;
+                     justify-content:space-between; align-items:flex-start; }
+      .tag { display:inline-block; background:#C377E0; color:#fff; padding:.2rem .5rem;
+             border-radius:3px; font-size:.75rem; margin-right:.3rem; }
+      .input-tarea, .input-lista { border-radius:20px; border:1px solid #ccc;
+                                   padding:.3rem .75rem; font-size:.9rem; background:#f9f9f9;
+                                   width:100%; }
+      .btn-discreto { border-radius:20px; padding:.3rem .9rem; font-size:.9rem;
+                      background:#6c757d; color:#fff; border:none; }
+      .btn-discreto:hover { background:#5a6268; }
+      .kanban-list:last-child { min-width:280px; border:2px dashed #ccc; background:#e0e0e0;
+                                opacity:.85; display:flex; flex-direction:column;
+                                justify-content:center; align-items:center; }
+      .kanban-list:last-child:hover { background:#d8d8d8; opacity:1; }
     </style>
-</h:head>
-<h:body class="d-flex">
-    <div class="bg-primary text-white p-3 flex-shrink-0" style="width: 250px; min-width: 250px; max-width: 250px; min-height: 100vh;">
-        <h2>Proyectos</h2>
-        <h:form styleClass="d-flex mb-3">
-            <h:inputHidden value="#{projectBean.newProjectName}"/>
-            <h:inputText value="#{projectBean.newProjectName}" styleClass="form-control me-2" />
-            <h:commandButton value="Añadir" action="#{projectBean.addProject}" styleClass="btn btn-success"/>
-        </h:form>
-        <ul class="list-group">
-            <ui:repeat var="project" value="#{projectBean.projectList}">
-                <li class="list-group-item bg-primary text-white">
-                    <h:link outcome="/board" styleClass="text-white text-decoration-none #{project.id == projectBean.currentProjectId ? 'fw-bold' : ''}">
-                        <f:param name="projectId" value="#{project.id}"/>
-                        #{project.name}
-                    </h:link>
-                </li>
-            </ui:repeat>
-        </ul>
-    </div>
+  </h:head>
 
-    <div class="flex-grow-1 p-4">
-        <h1 class="mb-4">#{projectBean.currentProject != null ? projectBean.currentProject.name : 'Selecciona un Proyecto'}</h1>
+  <h:body>
+    <h:form id="boardForm" styleClass="d-flex">
+
+      <!-- RemoteCommand para mover tareas -->
+      <p:remoteCommand name="rcMoveTask"
+                       action="#{boardBean.moveTaskAt(sourceList, destinationList, oldIndex, newIndex)}"
+                       process="@this"
+                       update=":boardForm:kanbanBoard">
+        <f:param name="sourceList"      value="#{param.sourceList}"/>
+        <f:param name="destinationList" value="#{param.destinationList}"/>
+        <f:param name="oldIndex"        value="#{param.oldIndex}"/>
+        <f:param name="newIndex"        value="#{param.newIndex}"/>
+      </p:remoteCommand>
+
+      <!-- Sidebar de Proyectos -->
+      <div class="bg-primary text-white p-3 flex-shrink-0"
+           style="width:250px; min-height:100vh;">
+        <h2>Proyectos</h2>
+        <div class="d-flex mb-3">
+          <h:inputText value="#{projectBean.newProjectName}"
+                       styleClass="form-control me-2"/>
+          <h:commandButton action="#{projectBean.addProject}"
+                           styleClass="btn btn-success">
+            <f:facet name="label">
+              <i class="bi bi-plus-lg"></i> Añadir
+            </f:facet>
+          </h:commandButton>
+        </div>
+        <ul class="list-group">
+          <ui:repeat var="proj" value="#{projectBean.projectList}">
+            <li class="list-group-item bg-primary text-white">
+              <h:link outcome="/board"
+                      styleClass="text-white text-decoration-none
+                                 #{proj.id == projectBean.currentProjectId ? 'fw-bold' : ''}">
+                <f:param name="projectId" value="#{proj.id}"/>
+                #{proj.name}
+              </h:link>
+            </li>
+          </ui:repeat>
+        </ul>
+      </div>
+
+      <!-- Contenido principal: Tablero -->
+      <div class="flex-grow-1 p-4">
+        <h1 class="mb-4">
+          #{projectBean.currentProject != null
+             ? projectBean.currentProject.name
+             : 'Selecciona un Proyecto'}
+        </h1>
 
         <h:panelGroup rendered="#{projectBean.currentProject != null}">
+          <!-- Panel que re-renderizamos -->
+          <h:panelGroup id="kanbanBoard">
             <div class="kanban-board">
-                <ui:repeat var="taskList" value="#{projectBean.currentProject.lists}">
-                    <div class="kanban-list" data-listname="#{taskList.name}">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0">#{taskList.name}</h5>
-                            <h:form styleClass="ms-2">
-                                <h:commandButton value="" action="#{boardBean.removeList(taskList.name)}" styleClass="btn btn-sm btn-outline-danger" title="Eliminar lista">
-                                    <i class="bi bi-trash"></i>
-                                </h:commandButton>
-                            </h:form>
-                        </div>
 
-                        <div class="task-container" id="tasks-#{taskList.name.replace(' ', '_')}">
-                            <ui:repeat var="task" value="#{taskList.tasks}" varStatus="taskLoop">
-                                <div class="kanban-task" data-bs-toggle="modal" data-bs-target="#taskModal-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}"
-                                     onclick="PF('taskDialog#{taskList.name.replace(' ', '_')}-#{taskLoop.index}').show(); #{boardBean.openEditModal(task)}">
-                                    <div>
-                                        <h6 class="mb-1">#{task.title}</h6>
-                                        <h:outputText value="Encargado: #{task.encargado}" styleClass="text-muted" rendered="#{not empty task.encargado}"/>
-                                        <div>
-                                            <ui:repeat var="tag" value="#{task.tags}">
-                                                <span class="tag">#{tag.name}</span>
-                                            </ui:repeat>
-                                        </div>
-                                    </div>
-                                    <h:form styleClass="delete-task-form" onclick="event.stopPropagation();">
-                                        <h:commandButton value="" action="#{boardBean.removeTask(taskList.name, taskLoop.index)}" styleClass="btn btn-sm btn-outline-danger" title="Eliminar tarea">
-                                            <i class="bi bi-x-lg"></i>
-                                        </h:commandButton>
-                                    </h:form>
-                                </div>
+              <ui:repeat var="list" value="#{projectBean.currentProject.lists}">
+                <div class="kanban-list" data-listname="#{list.name}">
 
-                                <div class="modal fade" id="taskModal-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}" tabindex="-1" aria-labelledby="taskModalLabel-#{taskList.name.replace(' ', '_')}-#{taskLoop.index}" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Editar Tarea</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <h:form id="taskForm-#{taskLoop.index}">
-    <!-- Descripción -->
-    <div class="mb-3">
-        <h:outputLabel styleClass="form-label" value="Descripción"/>
-        <h:inputTextarea styleClass="form-control"
-                         value="#{boardBean.currentTask.description}"
-                         rows="3"/>
-    </div>
+                  <!-- Encabezado de lista -->
+                  <div class="d-flex justify-content-between mb-2">
+                    <h5 class="mb-0">#{list.name}</h5>
+                    <h:commandButton action="#{boardBean.removeList(list.name)}"
+                                     styleClass="btn btn-sm btn-outline-danger"
+                                     title="Eliminar lista">
+                      <f:facet name="label">
+                        <i class="bi bi-trash-fill"></i>
+                      </f:facet>
+                    </h:commandButton>
+                  </div>
 
-    <!-- Etiquetas actuales -->
-    <div class="mb-3">
-        <h:outputLabel styleClass="form-label" value="Etiquetas actuales"/><br/>
-        <h:panelGroup id="tagsPanel" layout="block">
-            <ui:repeat var="tag" value="#{boardBean.currentTask.tags}">
-                <span class="badge bg-secondary me-1">#{tag.name}</span>
-            </ui:repeat>
-        </h:panelGroup>
-    </div>
+                  <!-- Contenedor de tareas -->
+                  <div class="task-container"
+                       id="tasks-#{list.name.replace(' ','_')}">
+                    <ui:repeat var="task" varStatus="st" value="#{list.tasks}">
 
-    <!-- Campo único para la nueva etiqueta -->
-    <div class="mb-3">
-        <h:outputLabel for="newTagInput" styleClass="form-label" value="Nueva etiqueta"/>
-        <h:inputText id="newTagInput"
-                     styleClass="form-control"
-                     value="#{boardBean.newTag}"/>
-    </div>
-
-    <!-- Encargado -->
-    <div class="mb-3">
-        <h:outputLabel styleClass="form-label" value="Encargado"/>
-        <h:inputText styleClass="form-control"
-                     value="#{boardBean.currentTask.encargado}"/>
-    </div>
-
-    <!-- Botón único: guarda descripción, encargado y agrega la nueva etiqueta -->
-    <h:commandButton value="Guardar Cambios"
-                     action="#{boardBean.saveTaskChanges(taskList.name, taskLoop.index)}"
-                     styleClass="btn btn-primary"/>
-</h:form>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                      <!-- Tarjeta de tarea -->
+                      <div class="kanban-task"
+                           data-bs-toggle="modal"
+                           data-bs-target="#modal-#{list.name.replace(' ','_')}-#{st.index}"
+                           onclick="#{boardBean.openEditModal(task)}">
+                        <div>
+                          <h6>#{task.title}</h6>
+                          <h:outputText value="Encargado: #{task.encargado}"
+                                        rendered="#{not empty task.encargado}"
+                                        styleClass="text-muted"/>
+                          <div>
+                            <ui:repeat var="tg" value="#{task.tags}">
+                              <span class="tag">#{tg.name}</span>
                             </ui:repeat>
+                          </div>
                         </div>
+                        <h:commandButton action="#{boardBean.removeTask(list.name, st.index)}"
+                                         styleClass="btn btn-sm btn-outline-danger"
+                                         onclick="event.stopPropagation();"
+                                         title="Eliminar tarea">
+                          <f:facet name="label">
+                            <i class="bi bi-x-lg"></i>
+                          </f:facet>
+                        </h:commandButton>
+                      </div>
 
-                        <h:form styleClass="d-flex mt-2">
-                            <h:inputHidden value="#{boardBean.newTaskTitle}"/>
-                            <h:inputText value="#{boardBean.newTaskTitle}" styleClass="input-tarea me-2"/>
-                            <h:commandButton value="" action="#{boardBean.addTask(taskList.name)}" styleClass="btn-discreto">
-                                <i class="bi bi-plus"></i>
-                            </h:commandButton>
-                        </h:form>
-                    </div>
-                </ui:repeat>
+                      <!-- Modal Editar Tarea -->
+                      <div class="modal fade"
+                           id="modal-#{list.name.replace(' ','_')}-#{st.index}"
+                           tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
 
-                <div class="kanban-list d-flex flex-column justify-content-center align-items-center text-muted" style="background-color: #e0e0e0;">
-                    <h:form styleClass="w-100">
-                        <div class="d-flex">
-                            <h:inputText value="#{boardBean.newListName}" styleClass="form-control input-lista me-2" />
-                            <h:commandButton value="" action="#{boardBean.addList}" styleClass="btn btn-dark rounded-pill">
-                                <i class="bi bi-plus-lg"></i>
-                            </h:commandButton>
+                            <div class="modal-header">
+                              <h5 class="modal-title">Editar Tarea</h5>
+                              <button type="button" class="btn-close"
+                                      data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body">
+                              <h:panelGrid columns="1" styleClass="p-fluid">
+
+                                <!-- Descripción -->
+                                <div class="mb-3">
+                                  <h:outputLabel for="desc-#{st.index}"
+                                                 value="Descripción"/>
+                                  <h:inputTextarea id="desc-#{st.index}"
+                                                   styleClass="form-control"
+                                                   value="#{boardBean.currentTask.description}"
+                                                   rows="3"/>
+                                </div>
+
+                                <!-- Encargado -->
+                                <div class="mb-3">
+                                  <h:outputLabel for="enc-#{st.index}"
+                                                 value="Encargado"/>
+                                  <h:inputText id="enc-#{st.index}"
+                                               styleClass="form-control"
+                                               value="#{boardBean.currentTask.encargado}"/>
+                                </div>
+
+                                <!-- Etiquetas actuales -->
+                                <div class="mb-3">
+                                  <h:outputLabel value="Etiquetas actuales"/><br/>
+                                  <h:panelGroup id="tagsPanel-#{st.index}" layout="block">
+                                    <ui:repeat var="tg" value="#{boardBean.currentTask.tags}">
+                                      <span class="badge bg-secondary me-1">
+                                        #{tg.name}
+                                      </span>
+                                    </ui:repeat>
+                                  </h:panelGroup>
+                                </div>
+
+                                <!-- Nueva etiqueta + AJAX -->
+                                <div class="d-flex mb-3">
+                                  <h:inputText id="newTag-#{st.index}"
+                                               styleClass="form-control me-2"
+                                               value="#{boardBean.newTag}"/>
+                                  <h:commandButton action="#{boardBean.addTagToCurrentTask}"
+                                                   styleClass="btn btn-outline-secondary"
+                                                   title="Agregar etiqueta">
+                                    <f:facet name="label">
+                                      <i class="bi bi-plus-circle"></i>
+                                    </f:facet>
+                                    <f:ajax execute="newTag-#{st.index}"
+                                            render="tagsPanel-#{st.index},newTag-#{st.index}"
+                                            onevent="function(evt){
+                                              if(evt.status==='success'){
+                                                initBoard();
+                                              }
+                                            }"/>
+                                  </h:commandButton>
+                                </div>
+
+                                <!-- Guardar Cambios -->
+                                <div class="text-end">
+                                  <h:commandButton action="#{boardBean.saveTaskChanges(list.name, st.index)}"
+                                                   styleClass="btn btn-primary"
+                                                   pt:data-bs-dismiss="modal"
+                                                   title="Guardar cambios">
+                                    <f:facet name="label">
+                                      <i class="bi bi-save2 me-1"></i>Guardar Cambios
+                                    </f:facet>
+                                    <f:ajax execute="@form"
+                                            render=":boardForm:kanbanBoard"
+                                            onevent="function(evt){
+                                              if(evt.status==='success'){
+                                                initBoard();
+                                              }
+                                            }"/>
+                                  </h:commandButton>
+                                </div>
+
+                              </h:panelGrid>
+                            </div>
+
+                          </div>
                         </div>
-                    </h:form>
+                      </div>
+                      <!-- /Modal -->
+
+                    </ui:repeat>
+                  </div>
+
+                  <!-- Añadir nueva tarea -->
+                  <div class="d-flex mt-2">
+                    <h:inputText value="#{boardBean.newTaskTitle}"
+                                 styleClass="input-tarea me-2"/>
+                    <h:commandButton action="#{boardBean.addTask(list.name)}"
+                                     styleClass="btn btn-discreto"
+                                     title="Agregar tarea">
+                      <f:facet name="label">
+                        <i class="bi bi-plus-lg"></i>
+                      </f:facet>
+                    </h:commandButton>
+                  </div>
+
                 </div>
+              </ui:repeat>
+
+              <!-- Añadir nueva lista -->
+              <div class="kanban-list d-flex flex-column justify-content-center align-items-center text-muted">
+                <div class="d-flex w-100">
+                  <h:inputText value="#{boardBean.newListName}"
+                               styleClass="form-control me-2"/>
+                  <h:commandButton action="#{boardBean.addList}"
+                                   styleClass="btn btn-dark rounded-pill"
+                                   title="Agregar lista">
+                    <f:facet name="label">
+                      <i class="bi bi-plus-lg"></i>
+                    </f:facet>
+                  </h:commandButton>
+                </div>
+              </div>
+
             </div>
+          </h:panelGroup>
         </h:panelGroup>
-        <h:panelGroup rendered="#{projectBean.currentProject == null}">
-            <p class="text-muted">Selecciona un proyecto de la lista para ver el tablero.</p>
-        </h:panelGroup>
-    </div>
+      </div>
 
+    </h:form>
+
+    <!-- Re-inicializa SortableJS tras AJAX -->
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM completamente cargado");
-            document.querySelectorAll('.task-container').forEach(container => {
-                new Sortable(container, {
-                    group: 'tasks',
-                    animation: 150,
-                    onEnd: function (evt) {
-                        const fromList = evt.from.closest('.kanban-list')?.dataset.listname;
-                        const toList = evt.to.closest('.kanban-list')?.dataset.listname;
-
-                        console.log("onEnd => De:", fromList, "a:", toList);
-                        console.log("Indices:", evt.oldIndex, "->", evt.newIndex);
-
-                        if (!fromList || !toList) {
-                            console.warn("❗ No se pudo determinar el nombre de una lista (dataset.listname faltante)");
-                            return;
-                        }
-
-                        const formData = new FormData();
-                        formData.append("action", "moveTaskAt");
-                        formData.append("fromList", fromList);
-                        formData.append("toList", toList);
-                        formData.append("taskIndex", evt.oldIndex);
-                        formData.append("newIndex", evt.newIndex);
-
-                        fetch("board", {
-                            method: "POST",
-                            body: formData
-                        }).then(response => {
-                            console.log("Respuesta del servidor:", response.status);
-                            if (!response.ok) {
-                                alert("Error al mover la tarea");
-                            }
-                        }).catch(err => {
-                            console.error("Error en fetch:", err);
-                        });
-                    }
-                });
-            });
+      function initBoard() {
+        document.querySelectorAll('.task-container').forEach(container => {
+          new Sortable(container, {
+            group: 'tasks',
+            animation: 150,
+            onEnd(evt) {
+              const from = evt.from.closest('.kanban-list').dataset.listname;
+              const to   = evt.to.closest('.kanban-list').dataset.listname;
+              if (!from || !to) return;
+              rcMoveTask([
+                { name:'sourceList',      value: from },
+                { name:'destinationList', value: to   },
+                { name:'oldIndex',        value: evt.oldIndex },
+                { name:'newIndex',        value: evt.newIndex }
+              ]);
+            }
+          });
         });
+      }
+      document.addEventListener('DOMContentLoaded', initBoard);
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</h:body>
+  </h:body>
 </html>

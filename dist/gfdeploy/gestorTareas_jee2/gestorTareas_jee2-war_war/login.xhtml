@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<h:head>
+    <title>Iniciar Sesión</title>
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</h:head>
+<h:body>
+    <div class="login-container">
+        <h1>Iniciar Sesión</h1>
+
+        <h:messages globalOnly="true" styleClass="error-message" errorStyle="color: red; display:block;"/>
+
+        <h:form id="loginForm">
+            <div class="form-group">
+                <h:outputLabel for="username">Usuario:</h:outputLabel>
+                <h:inputText id="username" value="#{loginBean.username}" required="true" requiredMessage="El nombre de usuario es requerido."/>
+                <h:message for="username" style="color: red;"/>
+            </div>
+            <div class="form-group">
+                <h:outputLabel for="password">Contraseña:</h:outputLabel>
+                <h:inputSecret id="password" value="#{loginBean.password}" required="true" requiredMessage="La contraseña es requerida."/>
+                <h:message for="password" style="color: red;"/>
+            </div>
+            <h:commandButton value="Iniciar Sesión" action="#{loginBean.login}" styleClass="button"/>
+        </h:form>
+    </div>
+</h:body>
+</html>

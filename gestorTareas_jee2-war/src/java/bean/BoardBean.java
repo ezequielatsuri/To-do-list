@@ -142,28 +142,32 @@ public class BoardBean implements Serializable {
     }
 
     public void saveTaskChanges(String listName, int taskIndex) {
+    // Sólo procedemos si hay una tarea cargada para editar y un nombre de lista válido
     if (currentTask != null && listName != null) {
         TaskList list = getCurrentProject().getListByName(listName);
+        // Verificamos que la lista existe y que el índice de tarea es correcto
         if (list != null && taskIndex >= 0 && taskIndex < list.getTasks().size()) {
             Task taskToUpdate = list.getTask(taskIndex);
 
-            // --- AÑADIR TAG PENDIENTE ---
+            // --- AÑADIR NUEVA ETIQUETA (si se escribió algo en newTag) ---
             if (newTag != null && !newTag.trim().isEmpty()) {
                 taskToUpdate.addTag(new Tag(newTag.trim()));
             }
 
-            // --- ACTUALIZAR DATOS DE TAREA ---
+            // --- ACTUALIZAR DESCRIPCIÓN Y ENCARGADO ---
             taskToUpdate.setDescription(currentTask.getDescription());
             taskToUpdate.setEncargado(currentTask.getEncargado());
 
-            // --- LIMPIAR ESTADO DEL BEAN ---
-            this.newTag = null;
+            // --- LIMPIAR ESTADO DEL BEAN para la próxima edición ---
+            this.newTag      = null;
             this.currentTask = null;
 
-            System.out.println("Guardando cambios (y tags) en la tarea: " + taskToUpdate.getTitle());
+            System.out.println("Guardando cambios en la tarea '" 
+                + taskToUpdate.getTitle() + "': descripción, encargado y etiquetas actualizadas.");
         }
     }
 }
+
 
 
     // Getters y Setters para newListName, newTaskTitle, taskDescription, tagName, encargado, etc.
